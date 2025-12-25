@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Hệ thống quản lý vi phạm</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+ function renderViolationTable() {
+  const table = document.getElementById("violationTable");
+  table.innerHTML = "";
+  violationList.forEach((v, index) => {
+    const tr = document.createElement("tr");
+    tr.className = "border-t";
+
+ tr.innerHTML = `
+  <td class="p-2 font-medium">${v["Mã SV"]}</td>
+  <td class="p-2">${v["Họ tên"]}</td>
+  <td class="p-2">${v["Lớp"]}</td>
+  <td class="p-2">${v["Khóa"]}</td>
+  <td class="p-2">${v["Khoa"]}</td>
+  <td class="p-2">${v["Ngày"]}</td>
+  <td class="p-2">${v["Buổi"]}</td>
+  <td class="p-2">${v["Vi phạm"]}</td>
+  <td class="p-2 text-center">
+    <button
+      class="bg-red-500 text-white px-2 py-1 rounded"
+      onclick="deleteViolation(${index})">
+      X
+    </button>
+  </td>
+`;
+
+    table.appendChild(tr);
+  });
+}
+function deleteViolation(index) {
+  console.log("Xóa index:", index); // ⭐ test
+
+  if (!confirm("Bạn có chắc muốn xóa không?")) return;
+
+  violationList.splice(index, 1);
+
+  saveData();
+  renderViolationTable();
+}
+</script>
+<script></script>
+<script>function renderSinhVienList(list) {
+  const content = document.getElementById("content");
+
+  // Xóa danh sách cũ (chỉ giữ ô tìm kiếm)
+  content.querySelectorAll("button").forEach(b => b.remove());
+
+  list.forEach(sv => {
+    const btn = document.createElement("button");
+    btn.className = "bg-white p-4 rounded shadow hover:bg-blue-100";
+    btn.innerText = sv;
+    btn.onclick = () => {
+      history.push(() => showSinhVien(selected.khoa, selected.khoaHoc, selected.lop));
+      selected.sv = sv;
+      showViPham();
+    };
+    content.appendChild(btn);
+  });
+}
+function searchSinhVien(khoa, khoaHoc, lop) {
+  const keyword = document.getElementById("searchSV").value.toLowerCase();
+
+  const list = data[khoa][khoaHoc][lop].filter(sv =>
+    sv.toLowerCase().includes(keyword)
+  );
+
+  renderSinhVienList(list);
+}
+
+ </script>
+ <script> function updateStatus() {
+  document.getElementById("status").innerText =
+    `Khoa: ${selected.khoa || "—"} | ` +
+    `Khóa: ${selected.khoaHoc || "—"} | ` +
+    `Lớp: ${selected.lop || "—"}`;
+}
+</script>
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex">
+
+<!-- SIDEBAR -->
+<div class="w-64 bg-blue-700 text-white p-4">
+  <h2 class="text-xl font-bold mb-4">QUẢN LÝ VI PHẠM</h2>
+
+  <button onclick="goBack()" class="bg-blue-500 w-full py-2 rounded mb-2">
+    Quay lại
+  </button>
+
+  <button onclick="exportExcel()" class="bg-green-600 w-full py-2 rounded">
+    Xuất Excel
+  </button>
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 p-6">
+    <h2 class="text-xl font-bold mt-8 mb-2">Danh sách vi phạm </h2>
+
+<table class="w-full bg-white rounded shadow text-sm">
+<thead class="bg-gray-200">
+  <tr>
+    <th class="p-2">Mã SV</th>
+    <th class="p-2">Họ tên</th>
+    <th class="p-2">Lớp</th>
+    <th class="p-2">Khóa</th>
+    <th class="p-2">Khoa</th>
+    <th class="p-2">Ngày</th>
+    <th class="p-2">Buổi</th>
+    <th class="p-2">Vi phạm</th>
+    <th class="p-2">Xóa</th>
+  </tr>
+</thead>
+
+  <tbody id="violationTable"></tbody>
+</table>
+<div id="status"
+     class="mb-3 text-sm text-gray-700 font-medium bg-blue-50 p-2 rounded">
+  Khoa: — | Khóa: — | Lớp: —
+</div>
+  <h1 class="text-2xl font-bold mb-4" id="title">Chọn khoa</h1>
+  <div id="content" class="grid grid-cols-3 gap-4"></div>
+</div>
+
+<script>
+// ================= DATA =================
+const data = {
+  "CNTT": {
+    "CĐ9+K5": {
+      "THUD3": [
+        { maSV: "TH24TH3301", tenSV: "Bùi Công Thọ" },
+        { maSV: "TH24TH3302", tenSV: "Nguyễn Huỳnh Anh" },
+        { maSV: "TH24TH3305", tenSV: "Dương Bảo Chân" },
+        { maSV: "TH24TH3306", tenSV: "Nguyễn Tấn Chuyển" },
+        { maSV: "TH24TH3307", tenSV: "Trần Thành Đạt" },
+        { maSV: "TH24TH3308", tenSV: "Thị Diền" },
+        { maSV: "TH24TH3310", tenSV: "Lê Thị Duyên" },
+        { maSV: "TH24TH3311", tenSV: "Phan Văn Hải" },
+        { maSV: "TH24TH3312", tenSV: "Lữ Gia Hào" },
+        { maSV: "TH24TH3313", tenSV: "Bùi Chí Hiếu" },
+        { maSV: "TH24TH3314", tenSV: "Nguyễn Thị Thu Hoài" },
+        { maSV: "TH24TH3315", tenSV: "Nguyễn Gia Huy" },
+        { maSV: "TH24TH3316", tenSV: "Nguyễn Lê Quang Huy" },
+        { maSV: "TH24TH3317", tenSV: "Phạm Đoàn Gia Khang" },
+        { maSV: "TH24TH3319", tenSV: "Nguyễn Lý Minh Khôi" },
+        { maSV: "TH24TH3320", tenSV: "Hà Gia Lạc" },
+        { maSV: "TH24TH3324", tenSV: "Nguyễn Hạo Nam" },
+        { maSV: "TH24TH3325", tenSV: "Hồ Bảo Ngọc" },
+        { maSV: "TH24TH3326", tenSV: "Đinh Trọng Nhân" },
+        { maSV: "TH24TH3327", tenSV: "Nguyễn Thị Yến Nhi" },
+        { maSV: "TH24TH3328", tenSV: "Huỳnh Ngọc Như" },
+        { maSV: "TH24TH3330", tenSV: "Nguyễn Thái Phát" },
+        { maSV: "TH24TH3331", tenSV: "Nguyễn Phong Phú" },
+        { maSV: "TH24TH3333", tenSV: "Nguyễn Tri Quyên" },
+        { maSV: "TH24TH3336", tenSV: "Huỳnh Tấn Thịnh" },
+        { maSV: "TH24TH3337", tenSV: "Nguyễn Thị Bích Thùy" },
+        { maSV: "TH24TH3339", tenSV: "Nguyễn Minh Toàn" },
+        { maSV: "TH24TH3340", tenSV: "Võ Nguyễn Thu Trân" },
+        { maSV: "TH24TH3342", tenSV: "Lê Nhựt Trí Vĩ" },
+        { maSV: "TH24TH3344", tenSV: "Trương Lê Ái Vy" },
+        { maSV: "TH24TH3347", tenSV: "Kha Nguyễn Tấn Lộc" },
+        { maSV: "TH24TH3348", tenSV: "Lê Kiệt Luân" }
+      ],
+          "THUD2": [
+      { maSV: "TH24TH3114", tenSV: "Trương Trung Hiếu" },
+      { maSV: "TH24TH3202", tenSV: "Trương Quốc Anh" },
+      { maSV: "TH24TH3203", tenSV: "Ngô Thị Ngọc Anh" },
+      { maSV: "TH24TH3206", tenSV: "Huỳnh Chi" },
+      { maSV: "TH24TH3210", tenSV: "Trương Nguyễn Dương" },
+      { maSV: "TH24TH3211", tenSV: "Phan Chí Hải" },
+      { maSV: "TH24TH3212", tenSV: "Ngô Quốc Hào" },
+      { maSV: "TH24TH3213", tenSV: "Trần Minh Hiếu" },
+      { maSV: "TH24TH3216", tenSV: "Dương Quốc Huy" },
+      { maSV: "TH24TH3217", tenSV: "Hồ Hoàng Khang" },
+      { maSV: "TH24TH3220", tenSV: "Tân Diễm Kiều" },
+      { maSV: "TH24TH3221", tenSV: "Nguyễn Thị Diễm Lê" },
+      { maSV: "TH24TH3222", tenSV: "Ngô Phước Lộc" },
+      { maSV: "TH24TH3223", tenSV: "Nguyễn Trúc Ly" },
+      { maSV: "TH24TH3225", tenSV: "Nguyễn Trần Kim Ngọc" },
+      { maSV: "TH24TH3226", tenSV: "Lê Trọng Nhân" },
+      { maSV: "TH24TH3227", tenSV: "Lê Ngọc Uyển Nhi" },
+      { maSV: "TH24TH3228", tenSV: "Lạc Thái Nhiên" },
+      { maSV: "TH24TH3229", tenSV: "Trương Nhật Phát" },
+      { maSV: "TH24TH3230", tenSV: "Châu Thuận Phát" },
+      { maSV: "TH24TH3232", tenSV: "Lê Trọng Phúc" },
+      { maSV: "TH24TH3233", tenSV: "Nguyễn Hoàng Anh Quốc" },
+      { maSV: "TH24TH3234", tenSV: "Trương Thành Tài" },
+      { maSV: "TH24TH3235", tenSV: "Đặng Hoàng Thành" },
+      { maSV: "TH24TH3236", tenSV: "Nguyễn Thịnh Thiên" },
+      { maSV: "TH24TH3238", tenSV: "Nguyễn Đức Tín" },
+      { maSV: "TH24TH3239", tenSV: "Võ Quốc Tình" },
+      { maSV: "TH24TH3242", tenSV: "Cao Ngọc Tuyền" },
+      { maSV: "TH24TH3245", tenSV: "Huỳnh Võ Như Ý" },
+      { maSV: "TH24TH3247", tenSV: "Lê Thanh Hùng" },
+      { maSV: "TH24TH3249", tenSV: "Huỳnh Yến Duy" },
+      { maSV: "TH24TH3323", tenSV: "Lê Ngọc Xuân Mới" }
+    ]
+    },
+      "CĐ9+K4": {
+    "THUD2": [
+      { maSV: "CK23OT3136", tenSV: "Lê Đình Nam" },
+      { maSV: "DL23KS3112", tenSV: "Lê Thị Nữ" },
+      { maSV: "TH23TH3133", tenSV: "Trương Minh Nam" },
+      { maSV: "TH23TH3201", tenSV: "Tạ Thiên Nam" },
+      { maSV: "TH23TH3203", tenSV: "Nguyễn Hoài Nam" },
+      { maSV: "TH23TH3206", tenSV: "Nguyễn Ngọc Ánh" },
+      { maSV: "TH23TH3207", tenSV: "Lê Huỳnh" },
+      { maSV: "TH23TH3210", tenSV: "Nguyễn Thành Nam" },
+      { maSV: "TH23TH3215", tenSV: "Nguyễn Phúc Nam" },
+      { maSV: "TH23TH3216", tenSV: "Lê Hoàng Nam" },
+      { maSV: "TH23TH3217", tenSV: "Tăng Chấn" },
+      { maSV: "TH23TH3218", tenSV: "Hoàng Bảo" },
+      { maSV: "TH23TH3221", tenSV: "Nguyễn Thị Huỳnh" },
+      { maSV: "TH23TH3222", tenSV: "Nguyễn Đức Nam" },
+      { maSV: "TH23TH3223", tenSV: "Trần Tấn Nam" },
+      { maSV: "TH23TH3224", tenSV: "Phan Thanh Nam" },
+      { maSV: "TH23TH3225", tenSV: "Lê Ngô Minh Nam" },
+      { maSV: "TH23TH3229", tenSV: "Phạm Ngọc Nam" },
+      { maSV: "TH23TH3232", tenSV: "Phạm Trí Nam" },
+      { maSV: "TH23TH3233", tenSV: "Nguyễn Ngọc Minh" },
+      { maSV: "TH23TH3234", tenSV: "Lý Văn Nam" },
+      { maSV: "TH23TH3235", tenSV: "Nguyễn Phú Nam" },
+      { maSV: "TH23TH3237", tenSV: "Lữ Thanh Nam" },
+      { maSV: "TH23TH3238", tenSV: "Nguyễn Các" },
+      { maSV: "TH23TH3239", tenSV: "Đinh Kiến Nam" },
+      { maSV: "TH23TH3240", tenSV: "Phan Thị Tường" },
+      { maSV: "TH23TH3241", tenSV: "Chiêm Hà Thúy" },
+      { maSV: "TH23TH3245", tenSV: "Nguyễn Danh Nam" },
+      { maSV: "TH23TH3304", tenSV: "Huỳnh Võ Gia Nam" },
+      { maSV: "TH23TH3307", tenSV: "Hồ Tuấn Nam" },
+      { maSV: "TH23TH3309", tenSV: "Danh Trùng Nam" },
+      { maSV: "TH23TH3313", tenSV: "Võ Văn Nam" },
+      { maSV: "TH23TH3321", tenSV: "Nguyễn Trương Bảo Nam" },
+      { maSV: "TH23TH3328", tenSV: "Trần Minh Nam" },
+      { maSV: "TH23TH3329", tenSV: "Phan Thanh Nam" },
+      { maSV: "TH23TH3333", tenSV: "Nguyễn Hữu Khánh Nam" },
+      { maSV: "TH23TH3334", tenSV: "Nguyễn Đăng Nam" },
+      { maSV: "TH23TH3337", tenSV: "Tô Phú Nam" },
+      { maSV: "TH23TH3340", tenSV: "Mai Phúc Nam" },
+      { maSV: "TH23TH3341", tenSV: "Thị Anh" }
+    ]
+  }
+  }
+};
+
+
+// ================= STATE =================
+let history = [];
+let selected = {};
+let violationList = [];
+ // ⭐ DANH SÁCH VI PHẠM
+function saveData() {
+  localStorage.setItem("violationList", JSON.stringify(violationList));
+}
+
+function loadData() {
+  const saved = localStorage.getItem("violationList");
+  if (saved) {
+    violationList = JSON.parse(saved);
+    renderViolationTable();
+  }
+}
+// ================= FUNCTIONS =================
+function renderButtons(list, callback) {
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+  list.forEach(item => {
+    const btn = document.createElement("button");
+    btn.className = "bg-white p-4 rounded shadow hover:bg-blue-100";
+    btn.innerText = item;
+    btn.onclick = () => callback(item);
+    content.appendChild(btn);
+  });
+}
+
+function showKhoa() {
+  document.getElementById("title").innerText = "Chọn khoa";
+  renderButtons(Object.keys(data), khoa => {
+    history.push(showKhoa);
+    selected.khoa = khoa;
+    updateStatus();
+    showKhoaHoc(khoa);
+  });
+}
+
+function showKhoaHoc(khoa) {
+  document.getElementById("title").innerText = "Chọn khóa";
+  renderButtons(Object.keys(data[khoa]), khoaHoc => {
+    history.push(() => showKhoaHoc(khoa));
+    selected.khoaHoc = khoaHoc;
+    updateStatus()
+    showLop(khoa, khoaHoc);
+  });
+}
+
+function showLop(khoa, khoaHoc) {
+  document.getElementById("title").innerText = "Chọn lớp";
+  renderButtons(Object.keys(data[khoa][khoaHoc]), lop => {
+    history.push(() => showLop(khoa, khoaHoc));
+    selected.lop = lop;
+    updateStatus();
+    showSinhVien(khoa, khoaHoc, lop);
+  });
+}
+
+function showSinhVien(khoa, khoaHoc, lop) {
+  document.getElementById("title").innerText = "Danh sách sinh viên";
+
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="col-span-3 mb-4 relative">
+  <input 
+    type="text"
+    id="searchSV"
+    placeholder="Tìm sinh viên..."
+    class="w-full p-2 border rounded"
+    oninput="autoCompleteSV('${khoa}', '${khoaHoc}', '${lop}')"
+  >
+
+  <div id="suggestBox"
+    class="absolute bg-white border w-full rounded shadow z-10 hidden">
+  </div>
+</div>
+  `;
+
+  renderSinhVienList(data[khoa][khoaHoc][lop]);
+}
+function renderSinhVienList(list) {
+  const content = document.getElementById("content");
+  content.querySelectorAll("button").forEach(b => b.remove());
+
+  list.forEach(sv => {
+    const btn = document.createElement("button");
+    btn.className = "bg-white p-4 rounded shadow hover:bg-blue-100 text-left";
+
+    btn.innerHTML = `
+      <div class="font-semibold">${sv.tenSV}</div>
+      <div class="text-xs text-gray-500">${sv.maSV}</div>
+    `;
+
+    btn.onclick = () => {
+      history.push(() => showSinhVien(selected.khoa, selected.khoaHoc, selected.lop));
+      selected.sv = sv;
+      showViPham();
+    };
+
+    content.appendChild(btn);
+  });
+}
+
+function showViPham() {
+  const content = document.getElementById("content");
+  document.getElementById("title").innerText = "Ghi nhận vi phạm";
+
+  content.innerHTML = `
+    <div class="bg-white p-6 rounded shadow col-span-3">
+     <p><b>Sinh viên:</b> ${selected.sv.tenSV} (${selected.sv.maSV})</p>
+      <div class="mt-4">
+        <label><input type="checkbox" value="Đi trễ"> Đi trễ</label><br>
+        <label><input type="checkbox" value="Hút thuốc"> Hút thuốc</label><br>
+        <label><input type="checkbox" value="Mang dép"> Mang dép</label>
+      </div>
+
+      <div class="mt-4">
+        <input type="date" id="date" class="border p-2">
+        <select id="buoi" class="border p-2">
+          <option>Sáng</option>
+          <option>Chiều</option>
+        </select>
+      </div>
+
+      <button onclick="addViolation()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
+        Thêm vào danh sách vi phạm
+      </button>
+    </div>
+  `;
+}
+
+// ================= ADD VIOLATION =================
+function addViolation() {
+  const checks = document.querySelectorAll("input[type=checkbox]:checked");
+  if (checks.length === 0) {
+    alert("Chưa chọn lỗi vi phạm!");
+    return;
+  }
+
+  const violations = [...checks].map(c => c.value).join(", ");
+
+violationList.push({
+  "Mã SV": selected.sv.maSV,
+  "Họ tên": selected.sv.tenSV,
+  "Lớp": selected.lop,
+  "Khóa": selected.khoaHoc,
+  "Khoa": selected.khoa,
+  "Ngày": document.getElementById("date").value,
+  "Buổi": document.getElementById("buoi").value,
+  "Vi phạm": violations
+});
+  saveData();
+  renderViolationTable(); // ⭐ HIỂN THỊ NGAY
+  alert("Đã thêm vào danh sách vi phạm");
+  function goBack() {
+  if (history.length > 0) {
+    history.pop()();
+    updateStatus();
+  }
+}
+
+}
+
+
+// ================= EXPORT =================
+function exportExcel() {
+  if (violationList.length === 0) {
+    alert("Chưa có sinh viên vi phạm nào!");
+    return;
+  }
+
+  const ws = XLSX.utils.json_to_sheet(violationList);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Danh sách vi phạm");
+  XLSX.writeFile(wb, "danhsach_vipham.xlsx");
+}
+
+function goBack() {
+  if (history.length > 0) {
+    history.pop()();
+  }
+}
+// KHI OUT RA VẪN CÒN DỮ LIỆU
+function saveData() {
+  localStorage.setItem("violationList", JSON.stringify(violationList));
+}
+
+function loadData() {
+  const dataSaved = localStorage.getItem("violationList");
+  if (dataSaved) {
+    violationList = JSON.parse(dataSaved);
+    renderViolationTable();
+  }
+}
+//AUTOCOMPLETE
+function autoCompleteSV(khoa, khoaHoc, lop) {
+  const keyword = document.getElementById("searchSV").value.toLowerCase();
+  const box = document.getElementById("suggestBox");
+
+  if (!keyword) {
+    box.classList.add("hidden");
+    return;
+  }
+
+  const list = data[khoa][khoaHoc][lop].filter(sv =>
+    sv.tenSV.toLowerCase().includes(keyword) ||
+    sv.maSV.toLowerCase().includes(keyword)
+  );
+
+  box.innerHTML = "";
+  box.classList.remove("hidden");
+
+  list.forEach(sv => {
+    const div = document.createElement("div");
+    div.className = "p-2 hover:bg-blue-100 cursor-pointer";
+
+    div.innerHTML = `
+      <div class="font-medium">${sv.tenSV}</div>
+      <div class="text-xs text-gray-500">${sv.maSV}</div>
+    `;
+
+    div.onclick = () => {
+      document.getElementById("searchSV").value = `${sv.tenSV} (${sv.maSV})`;
+      box.classList.add("hidden");
+
+      history.push(() => showSinhVien(khoa, khoaHoc, lop));
+      selected.sv = sv;
+      showViPham();
+    };
+
+    box.appendChild(div);
+  });
+}
+// START
+showKhoa();
+loadData();
+</script>
+</body>
+</html>
