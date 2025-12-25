@@ -428,7 +428,7 @@ function exportExcel() {
   const ws = XLSX.utils.json_to_sheet(violationList);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Danh sách vi phạm");
-  XLSX.writeFile(wb, "danhsach_vipham.xlsx");
+  XLSX.writeFile(wb, "Danhsach_vipham.xlsx");
 }
 
 function goBack() {
